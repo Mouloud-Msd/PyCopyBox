@@ -1,14 +1,35 @@
-from constants.X11_based_os import xclip_installation_commands
-from constants.supported_os import supported_os
+from ..OS import Os
+from constants.x11_based_os import x11_based_systems
+import subprocess
 
+def get_install_commands(system_infos : str) -> str: 
+    system_name = get_os(system_infos)
+    
+    return x11_based_systems[system_name]
 
-def get_install_commands(system_infos : str): 
-    getSystem = get_os(system_infos)
 
 def get_os(system_infos:str):
-    for os_name in supported_os: 
+    for os_name in x11_based_systems: 
         if os_name in system_infos:
             return os_name
         
+def install_xclip():
+    cmd = get_install_commands(os.version)
+    cmd_list = strCmd_into_list(cmd)
+    execute_cmd(cmd_list)
 
-#is_supported_os = lambda os_name: os_name in supported_os 
+        
+def get_clipboard_content():
+    try:
+        clipboard =  subprocess.run(["xclip", "selection", "-o"], capture_output=True)
+        return clipboard.stdout.decode('utf-8')
+    except FileNotFoundError as e :
+        print("Oups Xclip not installed on your machine. \nXclip is needed and should be installed.")
+        install_xclip()
+
+
+strCmd_into_list = lambda cmd: cmd.split(" ") 
+execute_cmd = lambda cmd_list:subprocess.run(cmd_list)
+
+Os.initalizeOs()
+os = Os()
