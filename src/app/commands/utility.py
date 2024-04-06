@@ -1,5 +1,6 @@
 from ..OS import Os
 from constants.x11_based_os import x11_based_systems
+from constants.clipboard_history import history
 import subprocess
 
 def get_install_commands(system_infos : str) -> str: 
@@ -26,6 +27,14 @@ def get_clipboard_content():
     except FileNotFoundError as e :
         print("Oups Xclip not installed on your machine. \nXclip is needed and should be installed.")
         install_xclip()
+
+
+def save_clipboard_history():
+    old_clipboard_content = history[-1]
+    actual_clipboard_content=get_clipboard_content()
+    if old_clipboard_content != None and old_clipboard_content != actual_clipboard_content :
+        history.append(actual_clipboard_content)
+
 
 
 strCmd_into_list = lambda cmd: cmd.split(" ") 
