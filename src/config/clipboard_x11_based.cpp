@@ -7,6 +7,29 @@
 #include <algorithm> 
 
 using namespace std;
+
+int find_index(const vector<KeySym> event_keys, KeySym target){
+    auto it = find(event_keys.begin(), event_keys.end(), target);
+    if(it != event_keys.end()){
+        int index = distance(event_keys.begin(), it);
+        return index + 1;
+    }
+    return 0;
+}
+
+
+ void execute_shell_command(int n){
+     //string stdString = "pyton3 get_deque_content " + to_string(n) + " | xclip -selection";
+    //string stdString = "echo POPO" + to_string(n) + " | xclip -sel clip";
+    string stdString = "echo POPO | xclip -sel clip";
+
+
+     FILE *pipe = popen(stdString.c_str(), "r");
+
+     pclose(pipe);
+ }
+
+
 bool is_supported_hotkey(const vector<KeySym> event_keys, KeySym target){
     int occ = count(event_keys.begin(),event_keys.end(), target);
     if(occ > 0){
@@ -14,7 +37,6 @@ bool is_supported_hotkey(const vector<KeySym> event_keys, KeySym target){
     }
     return false;
 }
-
 
 int main() {
     Display *display;
@@ -44,7 +66,9 @@ int main() {
         if (event.type == KeyPress) {
             KeySym keySym = XLookupKeysym(&event.xkey, 0);
             if (is_supported_hotkey(event_keys,keySym) && (event.xkey.state & ControlMask | ShiftMask)) {
-                cout << "Hotkey pressed" << endl;
+                cout << "find index: "  + find_index(event_keys,keySym) << endl;
+                execute_shell_command(find_index(event_keys,keySym));
+                cout << "Hotkey pressed" << keySym << endl;
             }
         }
         usleep(100000); // let the cpu rest:)
