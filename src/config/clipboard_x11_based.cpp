@@ -5,6 +5,10 @@
 #include <unistd.h>
 #include <vector>
 #include <algorithm> 
+#include <X11/extensions/XTest.h>
+#include <cstring>
+#include <X11/Xatom.h>
+
 
 using namespace std;
 
@@ -19,10 +23,7 @@ int find_index(const vector<KeySym> event_keys, KeySym target){
 
 
  void execute_shell_command(int n){
-     //string stdString = "pyton3 get_deque_content " + to_string(n) + " | xclip -selection";
-    //string stdString = "echo POPO" + to_string(n) + " | xclip -sel clip";
-    string stdString = "echo POPO | xclip -sel clip";
-
+    string stdString = "python3 -c 'from src.app.ClipBoardManager import ClipBoardManager; cbm = ClipBoardManager(); cbm.get_content_by_index("+to_string(n)+")' | xclip -sel clip";
 
      FILE *pipe = popen(stdString.c_str(), "r");
 
@@ -38,6 +39,12 @@ bool is_supported_hotkey(const vector<KeySym> event_keys, KeySym target){
     return false;
 }
 
+void save_copied_content(){
+    string stdString = "python3 -c 'from src.app.ClipBoardManager import ClipBoardManager; cbm = ClipBoardManager(); cbm.add_to_clipboard_history()";
+    FILE *pipe = popen(stdString.c_str(),"r");
+    pclose(pipe);
+}
+
 int main() {
     Display *display;
     Window rootWindow;
@@ -48,14 +55,15 @@ int main() {
     };
 
     // Open a connection to the X server
-    display = XOpenDisplay(NULL);
+    display = XOpenDisplay(nullptr);
     if (display == NULL) {
         cerr << "Error: Unable to open display." << endl;
         return 1;
     }
 
     rootWindow = DefaultRootWindow(display);
-    
+    //save copied content into deque
+    XGrabKey(display, XKeysymToKeycode(display, XK_c), ControlMask | ShiftMask, rootWindow, True, GrabModeAsync, GrabModeAsync);
     // define hotkeys: for by defqult is ctrl+shift+1,2,3,,4....
     for(int i=0 ; i < event_keys.size() ; i++){
         XGrabKey(display, XKeysymToKeycode(display, event_keys[i]), ControlMask | ShiftMask, rootWindow, True, GrabModeAsync, GrabModeAsync);
@@ -66,10 +74,14 @@ int main() {
         if (event.type == KeyPress) {
             KeySym keySym = XLookupKeysym(&event.xkey, 0);
             if (is_supported_hotkey(event_keys,keySym) && (event.xkey.state & ControlMask | ShiftMask)) {
-                cout << "find index: "  + find_index(event_keys,keySym) << endl;
                 execute_shell_command(find_index(event_keys,keySym));
                 cout << "Hotkey pressed" << keySym << endl;
             }
+            if(keySym == XK_c && (event.xkey.state & (ControlMask))){
+                XAllowEvents(display, ReplayKeyboard,CurrentTime);
+                cout << "HAHAHA" <<endl;               
+            }
+
         }
         usleep(100000); // let the cpu rest:)
     }
