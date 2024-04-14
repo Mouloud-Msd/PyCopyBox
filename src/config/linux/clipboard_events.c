@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
+
 
 int find_index(const KeySym event_keys[],int size, KeySym target){
     for(int i=0; i< size; i++){
@@ -38,28 +40,25 @@ void save_copied_content(){
 }
 
 int main(){
-    Display *display;
-    Window rootWindow;
-    XEvent event;
+    Display *display = XOpenDisplay(NULL);
+    if (!display) {
+        fprintf(stderr, "Cannot open display\n");
+        exit(1);
+    }
 
-    printf("PPPPPPPPPP");
+    int event_base, error_base;
+
+    Window rootWindow = DefaultRootWindow(display);
+
+    XEvent event;
+    int previous_event_timestamp = 0;
+
 
     KeySym event_keys[] = {
         XK_1, XK_2, XK_3, XK_4, XK_5, XK_6, XK_7, XK_8, XK_9
     };
 
     int event_keys_size =sizeof(event_keys)/sizeof(event_keys[0]);
-
-    display = XOpenDisplay(NULL);
-    if (display == NULL) {
-        printf("Error: Unable to open display.") ;
-        return 1;
-    }
-
-    rootWindow = DefaultRootWindow(display);
-    
-    //save copied content into deque
-    XGrabKey(display, XKeysymToKeycode(display, XK_c), ControlMask | ShiftMask, rootWindow, True, GrabModeAsync, GrabModeAsync);
     
     // define hotkeys: for by defqult is ctrl+shift+1,2,3,,4....
     for(int i=0 ; i < sizeof(event_keys)/sizeof(event_keys[0]) ; i++){
@@ -67,23 +66,21 @@ int main(){
     }
 
     while(1){
-    printf("FFF");
-
-         XNextEvent(display, &event);
-         if(event.type == KeyPress){
-             KeySym keySym = XLookupKeysym(&(event/*  */.xkey), 0 );
-             if (is_supported_hotkey(event_keys,event_keys_size,keySym) && (event.xkey.state & ControlMask | ShiftMask)) {
-                  if(find_index(event_keys,event_keys_size,keySym) != 0){
-                      execute_shell_command(find_index(event_keys,event_keys_size, keySym));
-                  }else{
-                      //Throwan error
-                      printf("Error hoyKey not supported");
-                  }
-
-             }
+        XNextEvent(display, &event);
+        if(event.type == KeyPress ){
+            KeySym keySym = XLookupKeysym(&(event.xkey), 0 );
+            if (is_supported_hotkey(event_keys,event_keys_size,keySym) && (event.xkey.state & ControlMask | ShiftMask)) {
+                 if(find_index(event_keys,event_keys_size,keySym) != 0){
+                     execute_shell_command(find_index(event_keys,event_keys_size, keySym));
+                     //printf("OOOOOOOOOOO\n");
+                 }else{
+                     //Throwan error
+                     printf("Error hoyKey not supported");
+                 }
+            }
         sleep(1);
         }
     }
-
+    XCloseDisplay(display);
     return 0;
 }
