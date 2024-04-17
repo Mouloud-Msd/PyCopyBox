@@ -17,13 +17,16 @@ int find_index(const KeySym event_keys[],int size, KeySym target){
 }
 
 void execute_shell_command(int n){
-    /*char n_to_str[1];
-    snprintf(n_to_str, sizeof(n_to_str), "%d", n);*/
+    // char n_to_str[1];
+    // snprintf(n_to_str, sizeof(n_to_str), "%d", n);
+    n=n-1;
+    printf("Oups hotkey pressed\n");
     char cmd_Str[200];
-    snprintf(cmd_Str, sizeof(cmd_Str), "python3 -c 'from src.app.ClipBoardManager import ClipBoardManager; cbm = ClipBoardManager(); cbm.get_content_by_index(%d)' | xclip -sel clip", n);
-     FILE *pipe = popen(cmd_Str, "r");
+    char *path = "app/ClipBoardManager.py";
+    snprintf(cmd_Str, sizeof(cmd_Str), "cd ../.. \n python3 \"%s\" %d | xclip -sel clip", path, n);
+     FILE *pipe2 = popen(cmd_Str, "r");
 
-     pclose(pipe);
+     pclose(pipe2);
 }
 
 bool is_supported_hotkey(const KeySym event_keys[],int size, KeySym target){

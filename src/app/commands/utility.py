@@ -1,6 +1,5 @@
 from ..OS import Os
 from constants.x11_based_os import x11_based_systems
-from constants.clipboard_history import history
 import subprocess
 
 def get_install_commands(system_infos : str) -> str: 
