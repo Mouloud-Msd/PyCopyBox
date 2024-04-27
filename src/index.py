@@ -1,11 +1,23 @@
 from app.ClipBoardManager import ClipBoardManager
-import sys
+import sys,subprocess
 cbm = ClipBoardManager()
-arg = int(sys.argv[1]) 
 
-cbm.add_to_clipboard_history(arg)
+if(sys.argv[1] == "save"):
+    clipboard =  subprocess.run(["xclip", "selection", "-o"], capture_output=True)
+    decoded_content= clipboard.stdout.decode('UTF-8')
+    cbm.add_to_clipboard_history(decoded_content)
 
-deque_list = list(cbm.clipboard_histoy)
-print(deque_list)
+
+
+
+
+
+
+
+#arg = int(sys.argv[1]) 
+
+
+deque_list = list(cbm.clipboard_history)
+print("content:", str(deque_list))
 print("length: "+ str(len(deque_list)))
 

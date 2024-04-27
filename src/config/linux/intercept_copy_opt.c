@@ -5,6 +5,14 @@
 #include <X11/Xproto.h>
 #include <X11/extensions/Xfixes.h>
 
+void save_clipBoard_content(){
+    char cmd_Str[200];
+    char *path = "index.py";
+    char *flag="save";
+    snprintf(cmd_Str, sizeof(cmd_Str), "cd ../.. \n python3 \"%s\" \"%s\" ", path,flag);
+    system(cmd_Str);
+}
+
 int main() {
     Display *display = XOpenDisplay(NULL);
     if (!display) {
@@ -38,6 +46,7 @@ int main() {
                     //     CloseClipboard();
                     // }
                     printf("Clipboard content changed!\n");
+                    save_clipBoard_content();
                 }
             }
         }
