@@ -7,6 +7,7 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
+#include <X11/extensions/XTest.h>
 
 
 int find_index(const KeySym event_keys[],int size, KeySym target){
@@ -20,13 +21,14 @@ void execute_shell_command(int n){
     // char n_to_str[1];
     // snprintf(n_to_str, sizeof(n_to_str), "%d", n);
     n=n-1;
-    printf("Oups hotkey pressed\n");
+    //printf("Oups hotkey pressed\n");
     char cmd_Str[200];
-    char *path = "app/ClipBoardManager.py";
+    char *path = "index.py";
     snprintf(cmd_Str, sizeof(cmd_Str), "cd ../.. \n python3 \"%s\" %d | xclip -sel clip", path, n);
-     FILE *pipe2 = popen(cmd_Str, "r");
+    //  FILE *pipe2 = popen(cmd_Str, "r");
 
-     pclose(pipe2);
+    //  pclose(pipe2);
+    system(cmd_Str);
 }
 
 bool is_supported_hotkey(const KeySym event_keys[],int size, KeySym target){
@@ -41,7 +43,17 @@ void save_copied_content(){
     FILE *pipe = popen(stdString,"r");
     pclose(pipe);
 }
+void sendPaste(Display *display) {
+    // Assuming XTest extension is available for simulating key events
+    KeyCode shift = XKeysymToKeycode(display, XK_Shift_L);
+    KeyCode insert = XKeysymToKeycode(display, XK_Insert);
 
+    XTestFakeKeyEvent(display, shift, True, 0); // Press shift
+    XTestFakeKeyEvent(display,insert, True, 0);    // Pressinsert
+    XTestFakeKeyEvent(display,insert, False, 0);   // Releaseinsert
+    XTestFakeKeyEvent(display, shift, False, 0); 
+    printf("Send Paste send !");
+}
 int main(){
     Display *display = XOpenDisplay(NULL);
     if (!display) {
@@ -62,6 +74,11 @@ int main(){
     };
 
     int event_keys_size =sizeof(event_keys)/sizeof(event_keys[0]);
+    //define window focus
+    Window focusWindow;
+    int revert;
+    XGetInputFocus(display, &focusWindow, &revert);
+
     
     // define hotkeys: for by defqult is ctrl+shift+1,2,3,,4....
     for(int i=0 ; i < sizeof(event_keys)/sizeof(event_keys[0]) ; i++){
@@ -74,8 +91,23 @@ int main(){
             KeySym keySym = XLookupKeysym(&(event.xkey), 0 );
             if (is_supported_hotkey(event_keys,event_keys_size,keySym) && (event.xkey.state & ControlMask | ShiftMask)) {
                  if(find_index(event_keys,event_keys_size,keySym) != 0){
-                     execute_shell_command(find_index(event_keys,event_keys_size, keySym));
-                     //printf("OOOOOOOOOOO\n");
+                    execute_shell_command(find_index(event_keys,event_keys_size, keySym));//
+                    //sendPaste(display);
+                    printf("Tralala");
+                    usleep(2000000); // Sleep for 2 seconds (5000000 microseconds)
+                    Window focusWindow;
+                    int revert;
+                    XGetInputFocus(display, &focusWindow, &revert);
+
+                    KeyCode v_key = XKeysymToKeycode(display, XK_Insert);
+                    KeyCode ctrl_key = XKeysymToKeycode(display, XK_Shift_L);
+
+                    XTestFakeKeyEvent(display, ctrl_key, True, 0);
+                    XTestFakeKeyEvent(display, v_key, True, 0);
+                    XTestFakeKeyEvent(display, v_key, False, 0);
+                    XTestFakeKeyEvent(display, ctrl_key, False, 0);
+
+                    XFlush(display); // Flush the output buffer to ensure events are sent
                  }else{
                      //Throwan error
                      printf("Error hoyKey not supported");
