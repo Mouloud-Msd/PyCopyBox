@@ -25,6 +25,9 @@ while True:
     x = sys.stdin.readline().strip()
     if(x):
         print("YUUUUUUPIIIII !")
-    #print("content:", str(deque_list))
-    #print("length: "+ str(len(deque_list)))
+        clipboard =  subprocess.run(["xclip", "selection", "-o"], capture_output=True)
+        decoded_content= clipboard.stdout.decode('UTF-8')
+        cbm.add_to_clipboard_history(decoded_content)
+        print("content:", str(deque_list))
+        print("length: "+ str(len(deque_list)))
 

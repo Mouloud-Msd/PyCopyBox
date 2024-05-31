@@ -43,7 +43,7 @@ int main() {
     }else if(pid == 0){
         //close(fd[1]);//close writing end of pipe
         dup2(fd[0], STDIN_FILENO);// std_input content is now fd[0] content
-        close(fd[0]);//close reading end as well hum hum
+        //close(fd[0]);//close reading end as well hum hum
         chdir("../..");
         execl("/usr/bin/python3", "python3", "index.py", "save", NULL);
         perror("excel error");
@@ -69,7 +69,7 @@ int main() {
                         // }
                         char *message = "clip\n";
                         write(fd[1], message, strlen(message));
-                        close(fd[1]);
+                        //close(fd[1]);
                         printf("Clipboard content changed!\n");
                         save_clipBoard_content();
                         
@@ -80,6 +80,9 @@ int main() {
         }
     
     }
+
+    close(fd[1]);
+    close(fd[0]);
 
     
     XCloseDisplay(display);
