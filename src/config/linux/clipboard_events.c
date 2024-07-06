@@ -5,10 +5,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
-#include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/extensions/XTest.h>
-
 
 int find_index(const KeySym event_keys[],int size, KeySym target){
     for(int i=0; i< size; i++){
@@ -43,19 +41,22 @@ void save_copied_content(){
     FILE *pipe = popen(stdString,"r");
     pclose(pipe);
 }
-void sendPaste(Display *display) {
+void paste(Display *display) {
     // Assuming XTest extension is available for simulating key events
     KeyCode shift = XKeysymToKeycode(display, XK_Shift_L);
     KeyCode insert = XKeysymToKeycode(display, XK_Insert);
 
-    XTestFakeKeyEvent(display, shift, True, 0); // Press shift
-    XTestFakeKeyEvent(display,insert, True, 0);    // Pressinsert
-    XTestFakeKeyEvent(display,insert, False, 0);   // Releaseinsert
+    XTestFakeKeyEvent(display, shift, True, 0); 
+    XTestFakeKeyEvent(display,insert, True, 0);    
+    XTestFakeKeyEvent(display,insert, False, 0);   
     XTestFakeKeyEvent(display, shift, False, 0); 
     printf("Send Paste send !");
+    XFlush(display); 
 }
 int main(){
     Display *display = XOpenDisplay(NULL);
+    printf("Start");
+    fflush(stdout);
     if (!display) {
         fprintf(stderr, "Cannot open display\n");
         exit(1);
@@ -91,21 +92,13 @@ int main(){
             KeySym keySym = XLookupKeysym(&(event.xkey), 0 );
             if (is_supported_hotkey(event_keys,event_keys_size,keySym) && (event.xkey.state & ControlMask | ShiftMask)) {
                  if(find_index(event_keys,event_keys_size,keySym) != 0){
-                    execute_shell_command(find_index(event_keys,event_keys_size, keySym));//
-                    //sendPaste(display);
-                    printf("Tralala");
-                    usleep(2000000); // Sleep for 2 seconds (5000000 microseconds)
+                    //execute_shell_command(find_index(event_keys,event_keys_size, keySym));//envoyer pressed index to child process asking for specefic elmnt 
+                    //paste(display);
+                    usleep(100000); // Sleep for 2 seconds (5000000 microseconds)
                     Window focusWindow;
                     int revert;
                     XGetInputFocus(display, &focusWindow, &revert);
-
-                    KeyCode v_key = XKeysymToKeycode(display, XK_Insert);
-                    KeyCode ctrl_key = XKeysymToKeycode(display, XK_Shift_L);
-
-                    XTestFakeKeyEvent(display, ctrl_key, True, 0);
-                    XTestFakeKeyEvent(display, v_key, True, 0);
-                    XTestFakeKeyEvent(display, v_key, False, 0);
-                    XTestFakeKeyEvent(display, ctrl_key, False, 0);
+                    paste(display);
 
                     XFlush(display); // Flush the output buffer to ensure events are sent
                  }else{
@@ -113,7 +106,7 @@ int main(){
                      printf("Error hoyKey not supported");
                  }
             }
-        sleep(1);
+        //sleep(1);
         }
     }
     XCloseDisplay(display);

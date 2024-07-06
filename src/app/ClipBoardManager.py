@@ -25,6 +25,10 @@ class ClipBoardManager():
             cls.clipboard_history[cls.copy_counter % 10] = c_content
         
         cls.copy_counter+=1
+
+    @classmethod
+    def get_specific_content(cls, i):
+        return cls.clipboard_history[i]
         
 
 
