@@ -153,15 +153,19 @@ int main() {
                     }
                 }
             }else if (event.type == event_base + XFixesSelectionNotify) {
-                XFixesSelectionNotifyEvent* ev = (XFixesSelectionNotifyEvent*)&event; //casting type of &event into XFixesSelectionNotifyEvent
-                if (ev->selection == XInternAtom(display, "CLIPBOARD", False)) {
-                    //check for previous event timestamp to avoid calling event infinitely when holding keys
-                    if (ev->owner != None && ev->owner != DefaultRootWindow(display)) {
-                        if(ev->selection_timestamp - previous_event_timestamp > 1000){     
-                            previous_event_timestamp =ev->selection_timestamp;
-                            char *flag = "copy\n";
-                            write(fd[1], flag, strlen(flag)); //first writing statement
-                            printf("Clipboard content changed!\n");
+                if((!(event.xkey.state & Mod1Mask)) && event.type != 2 | 3 | 34 ){
+                    printf("DDD: ");
+                    XFixesSelectionNotifyEvent* ev = (XFixesSelectionNotifyEvent*)&event; //casting type of &event into XFixesSelectionNotifyEvent
+                    if (ev->selection == XInternAtom(display, "CLIPBOARD", False)) {
+                        //check for previous event timestamp to avoid calling event infinitely when holding keys
+                        if (ev->owner != None && ev->owner != DefaultRootWindow(display)) {
+                            if(ev->selection_timestamp - previous_event_timestamp > 1000){     
+                                previous_event_timestamp =ev->selection_timestamp;
+                                char *flag = "copy\n";
+                                write(fd[1], flag, strlen(flag)); //first writing statement
+                                printf("Clipboard content changed!\n");
+
+                            }
                         }
                     }
                 }
