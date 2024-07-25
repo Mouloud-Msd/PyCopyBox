@@ -37,9 +37,7 @@ async def main():
             if(code== "paste"):
                 print("PASTE: ", str(x))
                 clipboard_item = cbm.get_specific_content(index - 1)
-                # subprocess.run(["echo", clipboard_item,"|" ,"xclip", "selection", "-o"], capture_output=True)
 
-                print("cbm: ",clipboard_item)
                 subprocess.run('echo "{}" | xclip -selection clipboard'.format(clipboard_item), shell=True)
 
 
