@@ -10,7 +10,7 @@ void get_clipboard_content(Display *display, Window window) {
     Atom target = XInternAtom(display, "TARGETS", False);
     Atom property = XInternAtom(display, "XSEL_DATA", False);
 
-    XConvertSelection(display, clipboard, utf8_string, property, window, CurrentTime);
+    XConvertSelection(display, clipboard, utf8_string, property, window, CurrentTime); //#
     XFlush(display);
     
     XEvent event;
@@ -42,18 +42,47 @@ void get_clipboard_content(Display *display, Window window) {
         }
     }
 }
-void set_clipboard_content(Display *display, Window window, const char *content){
+void set_clipboard_content(Display *display, Window window, const char *text) {
     Atom clipboard = XInternAtom(display, "CLIPBOARD", False);
-    Atom utf8_string = XInternAtom(display, "UTF8_STRING", False);
-    Atom target = XInternAtom(display, "TARGETS", False);
+    Atom targets = XInternAtom(display, "TARGETS", False);
+    Atom utf8 = XInternAtom(display, "UTF8_STRING", False);
+    Atom text_atom = XInternAtom(display, "TEXT", False);
     Atom property = XInternAtom(display, "XSEL_DATA", False);
 
-    XChangeProperty(display,DefaultRootWindow(display), property, utf8_string,8,PropModeReplace, (unsigned char *)content, strlen(content));
+    XSetSelectionOwner(display, clipboard, window, CurrentTime);
+    XSetSelectionOwner(display, XA_PRIMARY, window, CurrentTime);
 
-    XSetSelectionOwner(display, clipboard, window,CurrentTime);
+    XEvent event;
+    while (1) {
+        XNextEvent(display, &event);
 
-    XFlush(display);
-}   
+        if (event.type == SelectionRequest) {
+            XSelectionRequestEvent *req = &event.xselectionrequest;
+            XSelectionEvent ev = {0};
+
+            ev.type = SelectionNotify;
+            ev.display = req->display;
+            ev.requestor = req->requestor;
+            ev.selection = req->selection;
+            ev.target = req->target;
+            ev.property = req->property;
+            ev.time = req->time;
+
+            if (req->target == utf8 || req->target == text_atom) {
+                XChangeProperty(req->display, req->requestor, req->property, req->target, 8, PropModeReplace, (unsigned char*)text, strlen(text));
+            } else {
+                ev.property = None;
+            }
+
+            XSendEvent(display, ev.requestor, 0, 0, (XEvent *)&ev);
+        }
+        
+        //TODO add some sleep time here before breakingout of loop
+        // if (event.type == SelectionClear) {
+        //     break;
+        // }
+    }
+}
 int main() {
     Display *display = XOpenDisplay(NULL);
     if (!display) {
@@ -64,11 +93,11 @@ int main() {
     Window window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, 1, 1, 0, 0, 0);
     XSelectInput(display, window, PropertyChangeMask);
 
-    const char *content = "Hello World !";
+    const char *content = "it's just Rock n'Roll baby";
     set_clipboard_content(display, window,content);
 
     XDestroyWindow(display, window);
     XCloseDisplay(display);
 
-    return EXIT_SUCCESS;
+    //return EXIT_SUCCESS;
 }
