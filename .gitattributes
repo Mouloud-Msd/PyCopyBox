@@ -1,0 +1,13 @@
+src/** linguist-documentation=false
+
+#src/index.py linguist-language=Python
+#src/config/* linguist-language=C
+#src/app/* linguist-language=Python
+#src/constants/* linguist-language=Python
+
+# Ensure C files are recognized
+*.c linguist-language=C
+*.h linguist-language=C
+
+# Ensure Python files are recognized
+*.py linguist-language=Python
