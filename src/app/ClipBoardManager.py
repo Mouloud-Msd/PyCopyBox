@@ -5,11 +5,6 @@ class ClipBoardManager():
     copy_counter = 0
     _instance = None
     max_history_list_size=9
-
-    # def __init__(self, max_history_list_size=None):
-    #     if max_history_list_size is not None:
-    #         self.max_history_list_size = max_history_list_size
-    
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             print("new instance")
@@ -28,8 +23,8 @@ class ClipBoardManager():
 
     @classmethod
     def get_specific_content(cls, i):
-        ## **if index passed is biger than deque size, then by default it will return last element added to your clipboard history
-        if(i > len(cls.clipboard_history)) : return cls.clipboard_history[cls.clipboard_history- 1]
+        ## **if index passed is biger than deque size, then by default it will return last element added to your clipboard history string
+        if(i > len(cls.clipboard_history)) : return cls.clipboard_history[len(cls.clipboard_history)- 1] 
         return cls.clipboard_history[i]
         
 
