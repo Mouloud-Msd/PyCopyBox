@@ -3,6 +3,8 @@
 #include <string.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/keysym.h>
+#include <unistd.h> 
 
 void get_clipboard_content(Display *display, Window window) {
     Atom clipboard = XInternAtom(display, "CLIPBOARD", False);
@@ -31,10 +33,9 @@ void get_clipboard_content(Display *display, Window window) {
                                                 &actual_type, &actual_format, &nitems, &bytes_after, &prop);
                 if (result == Success) {
                     if (prop) {
-                        printf("Clipboard content: %s\n", prop);
+                        printf("%s", prop);
+                        printf("\n");
                         XFree(prop);
-                    } else {
-                        printf("Clipboard is empty or not UTF8_STRING.\n");
                     }
                 }
                 break;
@@ -77,27 +78,32 @@ void set_clipboard_content(Display *display, Window window, const char *text) {
             XSendEvent(display, ev.requestor, 0, 0, (XEvent *)&ev);
         }
         
-        //TODO add some sleep time here before breakingout of loop
-        // if (event.type == SelectionClear) {
-        //     break;
-        // }
+        
+        if (event.type == SelectionClear) {
+             break;
+        }
     }
 }
-int main() {
+int main(int argc, char* argv[2]) {
     Display *display = XOpenDisplay(NULL);
     if (!display) {
-        fprintf(stderr, "Unable to open display.\n");
+        fprintf(stderr, "Unable to open .\n");
         return EXIT_FAILURE;
     }
 
     Window window = XCreateSimpleWindow(display, DefaultRootWindow(display), 0, 0, 1, 1, 0, 0, 0);
     XSelectInput(display, window, PropertyChangeMask);
 
-    const char *content = "it's just Rock n'Roll baby";
-    set_clipboard_content(display, window,content);
+    if(strcmp(argv[1], "set") == 0){
+        const char *content = argv[2];
+        set_clipboard_content(display, window,content);
+    }
+    if(strcmp(argv[1], "get") == 0){
+        get_clipboard_content(display, window);
+    }
 
     XDestroyWindow(display, window);
     XCloseDisplay(display);
 
-    //return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }

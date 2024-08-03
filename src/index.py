@@ -8,11 +8,12 @@ cbm = ClipBoardManager()
 #     cbm.add_to_clipboard_history(decoded_content)
 
 
-async def get_clipBoard_content():
-    process =  await asyncio.create_subprocess_exec("xclip", "selection", "-o", stdout=asyncio.subprocess.PIPE)
-    stdout, stderr = await process.communicate()
-    return stdout.decode('UTF-8')
+async def get_clipBoard_content(handler_executable):
+    clipboard =  subprocess.run([handler_executable,"get"], capture_output=True)
+    return clipboard.stdout.decode('UTF-8')
 
+async def set_clipBoard_content(handler_executable, clipboard_item):
+    subprocess.run([handler_executable,"set", clipboard_item], capture_output=True)
 
 
 
@@ -21,12 +22,13 @@ async def get_clipBoard_content():
 
 
 async def main():
+    handler_executable = "config/linux/clipboard_handler"
     while True:
         x = sys.stdin.readline().strip()
         print("X: ", x)
         if(x == "copy"):
             print("COPY !")
-            decoded_content =  await get_clipBoard_content()
+            decoded_content =  await get_clipBoard_content(handler_executable)
             cbm.add_to_clipboard_history(decoded_content)
             deque_list = list(cbm.clipboard_history)
             print("content:", str(deque_list))
@@ -37,8 +39,7 @@ async def main():
             if(code== "paste"):
                 print("PASTE: ", str(x))
                 clipboard_item = cbm.get_specific_content(index - 1)
-
-                subprocess.run('echo "{}" | xclip -selection clipboard'.format(clipboard_item), shell=True)
+                await set_clipBoard_content(handler_executable, clipboard_item)
 
 
 if(__name__ == "__main__"):
