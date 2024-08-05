@@ -32,7 +32,7 @@ void execute_shell_command(int n){
     n=n-1;
     char cmd_Str[200];
     char *path = "index.py";
-    snprintf(cmd_Str, sizeof(cmd_Str), "cd ../.. \n python3 \"%s\" %d | xclip -sel clip", path, n);
+    snprintf(cmd_Str, sizeof(cmd_Str), "cd src \n python3 \"%s\" %d | xclip -sel clip", path, n);
     //  FILE *pipe2 = popen(cmd_Str, "r");
 
     //  pclose(pipe2);
@@ -90,7 +90,7 @@ int main() {
 
     }else if(pid == 0){
         dup2(fd[0], STDIN_FILENO);// std_input content is now fd[0] content
-        chdir("../..");
+        chdir("src");
         execl("/usr/bin/python3", "python3", "index.py", "save", NULL);
         perror("excel error");
     }else{
