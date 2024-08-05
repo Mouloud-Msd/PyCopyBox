@@ -36,7 +36,7 @@ To install and set up PyCopyBox, follow these steps:
 
 3. execute the script:
    ```bash
-   NULL
+   ./pycopybox
    ```
 
 ### Usage
