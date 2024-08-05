@@ -22,7 +22,7 @@ async def set_clipBoard_content(handler_executable, clipboard_item):
 
 
 async def main():
-    handler_executable = "config/linux/clipboard_handler"
+    handler_executable = "../clipboard_handler"
     while True:
         x = sys.stdin.readline().strip()
         print("X: ", x)
